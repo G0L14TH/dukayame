@@ -272,7 +272,7 @@ MIT License - Free to use for personal and commercial projects
 
 ## 🤝 Support
 
-- 📧 Email: your@email.com
+- 📧 Email: obaederrick@gmail.com
 - 🐛 Issues: [GitHub Issues](https://github.com/G0L14TH/repo/issues)
 
 ---
