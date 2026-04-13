@@ -1,4 +1,5 @@
-# 🎵 DUKAYAME digital store w/M-PESA payment
+# 🎵 M-Pesa Digital Downloads Store
+
 A clean, minimal platform for selling digital products (music, files) with M-Pesa payment integration.
 
 ![M-Pesa](https://img.shields.io/badge/payment-M--Pesa-green.svg)
@@ -271,7 +272,7 @@ MIT License - Free to use for personal and commercial projects
 
 ## 🤝 Support
 
-- 📧 Email: obaederrick@gmail.com.com
+- 📧 Email: your@email.com
 - 🐛 Issues: [GitHub Issues](https://github.com/G0L14TH/repo/issues)
 
 ---
