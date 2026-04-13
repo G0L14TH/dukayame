@@ -1,5 +1,4 @@
-# 🎵 M-Pesa Digital Downloads Store
-
+# 🎵 DUKAYAME digital store w/M-PESA payment
 A clean, minimal platform for selling digital products (music, files) with M-Pesa payment integration.
 
 ![M-Pesa](https://img.shields.io/badge/payment-M--Pesa-green.svg)
@@ -152,7 +151,7 @@ SELECT * FROM transactions WHERE status='completed';
 # 1. Get a VPS and domain
 # 2. Point domain to server IP
 # 3. SSH to server
-ssh user@your-server
+ssh user@my-server
 
 # 4. Clone and setup
 git clone https://github.com/G0L14TH/dukayame.git
@@ -272,7 +271,7 @@ MIT License - Free to use for personal and commercial projects
 
 ## 🤝 Support
 
-- 📧 Email: your@email.com
+- 📧 Email: obaederrick@gmail.com.com
 - 🐛 Issues: [GitHub Issues](https://github.com/G0L14TH/repo/issues)
 
 ---
