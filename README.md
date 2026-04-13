@@ -1,4 +1,5 @@
-# 🎵 M-Pesa Digital Downloads Store
+# 🎵 DUKAYAME digital store w/M-PESA payment
+
 
 A clean, minimal platform for selling digital products (music, files) with M-Pesa payment integration.
 
