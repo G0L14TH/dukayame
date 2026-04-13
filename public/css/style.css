@@ -1,0 +1,578 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --bg: #aca0a0;
+    --card-bg: #aca0a0;
+    --text: #1a1a1a;
+    --text-light: #666666;
+    --primary: #2f0d3e;
+    --border: #E5E5E5;
+    --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    --success: #00C853;
+    
+    /* Wobbling background blobs */
+    --blob-1: rgba(0, 102, 255, 0.08);
+    --blob-2: rgba(147, 51, 234, 0.06);
+    --blob-3: rgba(236, 72, 153, 0.05);
+}
+
+/* Dark theme mode */
+
+[data-theme="dark"] {
+    --bg: #0F0F0F;
+    --card-bg: #1A1A1A;
+    --text: #E5E5E5;
+    --text-light: #999999;
+    --primary: #07625a;
+    --border: #2A2A2A;
+    --shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    --success: #10B981;
+    
+    /* Wobbling background blobs - more glow in dark */
+    --blob-1: rgba(59, 130, 246, 0.12);
+    --blob-2: rgba(168, 85, 247, 0.10);
+    --blob-3: rgba(236, 72, 153, 0.08);
+}
+
+/* smooth transitions for theme changes */
+body,
+main,
+.product-card,
+.btn,
+.modal-content,
+.form-group input {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* ============================================
+   WOBBLING BACKGROUND
+   ============================================ */
+body::before {
+    content: '';
+    position: fixed;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    z-index: -1;
+    background: 
+        radial-gradient(circle at 20% 30%, var(--blob-1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 70%, var(--blob-2) 0%, transparent 50%),
+        radial-gradient(circle at 50% 50%, var(--blob-3) 0%, transparent 50%);
+    animation: wobble 20s ease-in-out infinite;
+}
+
+@keyframes wobble {
+    0%, 100% {
+        transform: translate(0, 0) rotate(0deg) scale(1);
+    }
+    33% {
+        transform: translate(3%, -4%) rotate(2deg) scale(1.02);
+    }
+    66% {
+        transform: translate(-3%, 3%) rotate(-1deg) scale(0.98);
+    }
+}
+
+/* ============================================
+   THEME TOGGLE BUTTON
+   ============================================ */
+.theme-toggle {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 50px;
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+    transition: all 0.3s ease;
+}
+
+.theme-toggle:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.15);
+    border-color: var(--primary);
+}
+
+.theme-toggle-icon {
+    width: 20px;
+    height: 20px;
+    color: var(--text);
+    transition: all 0.4s ease;
+}
+
+.theme-toggle:hover .theme-toggle-icon {
+    transform: rotate(20deg);
+    color: var(--primary);
+}
+
+.theme-toggle-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+    user-select: none;
+}
+
+/* Dark mode specific toggle styling */
+[data-theme="dark"] .theme-toggle:hover {
+    box-shadow: 0 6px 24px rgba(59, 130, 246, 0.3);
+}
+
+/* ============================================
+   CONTAINER & LAYOUT
+   ============================================ */
+.container {
+    width: 100%;
+    max-width: 480px;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 8px;
+    letter-spacing: -0.5px;
+}
+
+header p {
+    font-size: 0.95rem;
+    color: var(--text-light);
+    font-weight: 400;
+}
+
+/* ============================================
+   MAIN CONTENT
+   ============================================ */
+main {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 0;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+}
+
+#loading {
+    text-align: center;
+    padding: 80px 40px;
+    color: var(--text-light);
+    font-size: 1rem;
+}
+
+#loading::after {
+    content: '';
+    display: block;
+    width: 40px;
+    height: 40px;
+    margin: 24px auto 0;
+    border: 3px solid var(--border);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ============================================
+   PRODUCTS
+   ============================================ */
+.products-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.product-card {
+    padding: 32px;
+    border-bottom: 1px solid var(--border);
+    transition: all 0.2s ease;
+}
+
+.product-card:last-child {
+    border-bottom: none;
+}
+
+.product-card:hover {
+    background: var(--bg);
+}
+
+.product-card h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 8px;
+}
+
+.product-card p {
+    color: var(--text-light);
+    font-size: 0.95rem;
+    margin-bottom: 20px;
+    line-height: 1.6;
+}
+
+.product-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 20px 0;
+    padding: 16px 0;
+    border-top: 1px solid var(--border);
+}
+
+.file-size {
+    font-size: 0.9rem;
+    color: var(--text-light);
+}
+
+.price {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+/* ============================================
+   BUTTONS
+   ============================================ */
+.btn {
+    display: block;
+    width: 100%;
+    padding: 14px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    text-align: center;
+    transition: all 0.2s ease;
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: white;
+}
+
+.btn-primary:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+.btn-success {
+    background: var(--success);
+    color: white;
+}
+
+.btn-success:hover {
+    opacity: 0.9;
+}
+
+/* ============================================
+   MODAL
+   ============================================ */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.modal-content {
+    background: var(--card-bg);
+    margin: 40px auto;
+    padding: 40px;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 440px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    position: relative;
+}
+
+.close {
+    position: absolute;
+    right: 20px;
+    top: 20px;
+    color: var(--text-light);
+    font-size: 28px;
+    font-weight: 300;
+    cursor: pointer;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.close:hover {
+    background: var(--bg);
+    color: var(--text);
+}
+
+.modal-content h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 24px;
+}
+
+.product-summary {
+    text-align: center;
+    padding: 24px 0;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 28px;
+}
+
+.product-summary h3 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 12px;
+}
+
+.product-summary .price {
+    font-size: 2.5rem;
+}
+
+/* ============================================
+   FORMS
+   ============================================ */
+.form-group {
+    margin-bottom: 24px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--text);
+}
+
+.form-group input {
+    width: 100%;
+    padding: 14px 16px;
+    border: 1.5px solid var(--border);
+    background: var(--card-bg);
+    border-radius: 8px;
+    font-size: 1rem;
+    color: var(--text);
+    transition: all 0.2s ease;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+.form-group input::placeholder {
+    color: var(--text-light);
+}
+
+.form-group small {
+    display: block;
+    margin-top: 6px;
+    color: var(--text-light);
+    font-size: 0.85rem;
+}
+
+/* ============================================
+   PAYMENT STATUS
+   ============================================ */
+#payment-status {
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.status-icon {
+    font-size: 64px;
+    margin-bottom: 24px;
+}
+
+.status-icon.success::before {
+    content: '✓';
+    display: inline-block;
+    color: white;
+    background: var(--success);
+    width: 80px;
+    height: 80px;
+    line-height: 80px;
+    border-radius: 50%;
+}
+
+.status-icon.error::before {
+    content: '✗';
+    display: inline-block;
+    color: white;
+    background: #FF3B30;
+    width: 80px;
+    height: 80px;
+    line-height: 80px;
+    border-radius: 50%;
+}
+
+.status-icon.pending::before {
+    content: '⏳';
+    display: inline-block;
+}
+
+#status-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 12px;
+}
+
+#status-message {
+    color: var(--text-light);
+    margin-bottom: 24px;
+    font-size: 1rem;
+    line-height: 1.6;
+}
+
+#download-section {
+    margin-top: 28px;
+}
+
+.download-info {
+    margin-top: 16px;
+    color: var(--text-light);
+    font-size: 0.85rem;
+}
+
+/* ============================================
+   FOOTER
+   ============================================ */
+footer {
+    text-align: center;
+    margin-top: 40px;
+    padding: 20px;
+    color: var(--text-light);
+    font-size: 0.85rem;
+}
+
+/* ============================================
+   LOADING SPINNER
+   ============================================ */
+.spinner {
+    border: 3px solid var(--border);
+    border-top: 3px solid var(--primary);
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    animation: spin 0.8s linear infinite;
+    display: inline-block;
+    margin-right: 10px;
+    vertical-align: middle;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 600px) {
+    body {
+        padding: 16px;
+    }
+    
+    header h1 {
+        font-size: 1.75rem;
+    }
+    
+    .product-card {
+        padding: 24px;
+    }
+    
+    .modal-content {
+        padding: 28px 24px;
+    }
+    
+    .price {
+        font-size: 1.5rem;
+    }
+    
+    .product-summary .price {
+        font-size: 2rem;
+    }
+    
+    .theme-toggle {
+        top: 10px;
+        right: 10px;
+        padding: 8px 12px;
+    }
+    
+    .theme-toggle-label {
+        display: none;
+    }
+    .theme-toggle {
+        top: 10px;
+        right: 10px;
+        width: 40px;
+        height: 40px;
+        padding: 0;
+    }
+    
+    .theme-toggle-icon {
+        width: 18px;
+        height: 18px;
+    }
+    
+    .theme-toggle-label {
+        display: none;
+    }
+}
+
+
+/* ============================================
+   PERFORMANCE: REDUCE MOTION (Accessibility)
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}

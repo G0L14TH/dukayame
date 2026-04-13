@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> MZIKI DUKA </title>
+    <meta name="description" content="MZIKI DUKA - Premium digital downloads with secure M-Pesa payments">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <body> 
+    <!-- theme toggle button -->
+<button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+    <svg class="theme-toggle-icon" id="theme-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <!-- moon icon (default) -->
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+    </svg>
+    <span class="theme-toggle-label" id="theme-label">Dark</span>
+</button>
+
+    <div class="container">
+
+
+    <div class="container">
+        <header>
+            <h1>MZIKI DUKA</h1>
+            <p>Buy Mziki • Nguvu by M-Pesa</p>
+        </header>
+
+        <main id="main-content">
+            <!-- products will be loaded here -->
+            <div id="loading">Loading products...</div>
+        </main>
+
+        <!-- payment modal -->
+        <div id="payment-modal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>Complete Payment</h2>
+                <div id="payment-form">
+                    <div class="product-summary">
+                        <h3 id="modal-product-name"></h3>
+                        <p class="price">KSh <span id="modal-product-price"></span></p>
+                    </div>
+                    
+                    <form id="mpesa-form">
+                        <div class="form-group">
+                            <label for="phone-number">M-Pesa Phone Number</label>
+                            <input 
+                                type="tel" 
+                                id="phone-number" 
+                                placeholder="07123... or 2547123..." 
+                                required
+                                pattern="^(?:254|\+254|0)?[17]\d{8}$"
+                            >
+                            <small>Enter your number</small>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary" id="pay-btn">
+                            Lipa na M-Pesa
+                        </button>
+                    </form>
+                </div>
+
+                <!-- payment Status -->
+                <div id="payment-status" style="display: none;">
+                    <div class="status-icon" id="status-icon"></div>
+                    <h3 id="status-title"></h3>
+                    <p id="status-message"></p>
+                    <div id="download-section" style="display: none;">
+                        <a href="#" id="download-link" class="btn btn-success">Download Now</a>
+                        <p class="download-info">
+                            <small>Link expires in 24 hours. Maximum 3 downloads allowed.</small>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p><b>&copy; 2026 DARK RUUM STUDIOS. All rights reserved.</b></p>
+        </footer>
+    </div>
+
+    <script src="/js/main.js"></script>
+</body>
+</html>

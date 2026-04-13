@@ -1,0 +1,53 @@
+# Dependencies
+node_modules/
+package-lock.json
+npm-debug.log
+
+# Environment
+.env
+.env.local
+.env.production
+
+# Downloads
+downloads/*
+!downloads/.gitignore
+
+# Database
+database/*.db
+database/*.db-*
+*.sqlite
+*.sqlite3
+
+# Database bkups & archives
+database/backup_*.db
+database/archives/*
+database/exports/*
+
+!database/db.js
+!database/maintenance.js
+
+# Logs
+*.log
+npm-debug.log*
+logs/
+*.log
+*.pid
+
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+*~
+
+# IDE
+.vscode/
+.idea/
+*.sublime-project
+*.swp
+*.sublime-worspace
+
+#tmp
+tmp/
+temp/
+*.tmp
+*.bak
