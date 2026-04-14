@@ -288,4 +288,4 @@ Built with:
 
 ---
 
-**Built with ❤️ by INTASOL**
+**Built by INTASOL**
