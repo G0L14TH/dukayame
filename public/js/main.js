@@ -529,20 +529,19 @@ async function submitRecoveryRequest(event) {
     
     const email = emailInput.value.trim();
     
-    // Validate - need at least one
+    // Validate email is required
     if (!email) {
         showRecoveryResult('error', 'Please enter your email address');
+        emailInput.focus();
         return;
     }
     
-    // Validate email if provided
-    if (email) {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email)) {
-            showRecoveryResult('error', 'Invalid email format');
-            emailInput.focus();
-            return;
-        }
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        showRecoveryResult('error', 'Invalid email format');
+        emailInput.focus();
+        return;
     }
     
     // Disable form during submission
@@ -555,20 +554,18 @@ async function submitRecoveryRequest(event) {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                email: email || null,
-                phoneNumber: phone || null
+                email: email
             })
         });
         
         const data = await response.json();
         
         if (data.success) {
-            showRecoveryResult('success',
+            showRecoveryResult('success', 
                 `✅ Recovery link sent! Found ${data.purchaseCount} purchase(s). ` +
-                `Check your email for download link(s). ` +
-                `Link expires in ${data.expiresIn}.`
+                `Check your email for download link(s). Link expires in ${data.expiresIn}.`
             );
-
+            
             // Clear form after success
             setTimeout(() => {
                 emailInput.value = '';
@@ -576,7 +573,7 @@ async function submitRecoveryRequest(event) {
             }, 5000);
         } else {
             showRecoveryResult('error', data.message);
-
+            
             // Re-enable form
             submitBtn.disabled = false;
             submitBtn.textContent = 'Recover Link';

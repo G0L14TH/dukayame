@@ -810,27 +810,6 @@ footer {
     position: relative;
 }
  
-.form-or::before,
-.form-or::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    width: 40%;
-    height: 1px;
-    background: var(--border);
-}
- 
-.form-or::before { left: 0; }
-.form-or::after { right: 0; }
- 
-.recovery-result {
-    margin-top: 12px;
-    padding: 12px;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    line-height: 1.4;
-}
- 
 .recovery-result.success {
     background: #e8f5e9;
     color: #2e7d32;

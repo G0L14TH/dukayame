@@ -141,44 +141,31 @@ async function logRateLimit(identifier, identifierType, action, ipAddress) {
 // ============================================
 router.post('/recover-link', async (req, res) => {
   try {
-    const { email, phoneNumber } = req.body;
+    const { email } = req.body;
     const ipAddress = req.ip || req.connection.remoteAddress;
 
-    // Validate input - need at least one
-    if (!email && !phoneNumber) {
+    // Validate email is required
+    if (!email) {
       return res.status(400).json({
         success: false,
-        message: 'Please provide email or phone number'
+        message: 'Please provide your email address'
       });
     }
 
-    // Validate email format if provided
-    if (email) {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email)) {
-        return res.status(400).json({
-          success: false,
-          message: 'Invalid email format'
-        });
-      }
-    }
-
-    // Validate phone format if provided
-    if (phoneNumber) {
-      const phoneRegex = /^254\d{9}$/;
-      if (!phoneRegex.test(phoneNumber)) {
-        return res.status(400).json({
-          success: false,
-          message: 'Invalid phone number format. Use 254XXXXXXXXX'
-        });
-      }
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid email format'
+      });
     }
 
     // Check rate limits
-    const identifier = email || phoneNumber;
-    const identifierType = email ? 'email' : 'phone';
+    const identifier = email;
+    const identifierType = 'email';
 
-    // Rate limit: 3 requests per email/phone per day
+    // Rate limit: 3 requests per email per day
     const canRequest = await checkRateLimit(identifier, identifierType, 'recover_link', 3, 1440);
     if (!canRequest) {
       return res.status(429).json({
@@ -196,30 +183,14 @@ router.post('/recover-link', async (req, res) => {
       });
     }
 
-    // Find matching transactions
-    let query = `
+    // Find matching transactions - EMAIL ONLY
+    const transactions = await db.all(`
       SELECT * FROM transactions 
       WHERE status = 'completed'
-    `;
-    const params = [];
-
-    if (email && phoneNumber) {
-      // Both provided - must match both (most secure)
-      query += ' AND customer_email = ? AND phone_number = ?';
-      params.push(email, phoneNumber);
-    } else if (email) {
-      // Email only
-      query += ' AND customer_email = ?';
-      params.push(email);
-    } else {
-      // Phone only
-      query += ' AND phone_number = ?';
-      params.push(phoneNumber);
-    }
-
-    query += ' ORDER BY created_at DESC LIMIT 5';
-
-    const transactions = await db.all(query, params);
+        AND customer_email = ?
+      ORDER BY created_at DESC 
+      LIMIT 5
+    `, [email]);
 
     if (!transactions || transactions.length === 0) {
       // Log attempt even if not found (security)
@@ -227,7 +198,7 @@ router.post('/recover-link', async (req, res) => {
       
       return res.status(404).json({
         success: false,
-        message: 'No purchases found with this information'
+        message: 'No purchases found with this email address'
       });
     }
 
@@ -249,11 +220,10 @@ router.post('/recover-link', async (req, res) => {
           ip_address,
           expires_at
         )
-        VALUES (?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, NULL, ?, ?, ?)
       `, [
         transaction.id,
-        email || null,
-        phoneNumber || null,
+        email,
         recoveryToken,
         ipAddress,
         expiresAt.toISOString()
@@ -276,23 +246,13 @@ router.post('/recover-link', async (req, res) => {
     // Log rate limit
     await logRateLimit(identifier, identifierType, 'recover_link', ipAddress);
 
-    // Send recovery email/SMS
-    if (email) {
-      // TODO: Send email with recovery links
-      console.log('📧 Recovery email would be sent to:', email);
-      console.log('Links:', recoveryLinks);
-    }
-
-    if (phoneNumber && !email) {
-      // TODO: Send SMS with recovery link (only if no email)
-      console.log('📱 Recovery SMS would be sent to:', phoneNumber);
-    }
+    // TODO: Send recovery email
+    console.log('📧 Recovery email would be sent to:', email);
+    console.log('Links:', recoveryLinks);
 
     res.json({
       success: true,
-      message: email 
-        ? 'Recovery link sent to your email. Check your inbox.'
-        : 'Recovery link sent to your phone via SMS.',
+      message: 'Recovery link sent to your email. Check your inbox.',
       purchaseCount: transactions.length,
       expiresIn: '2 hours'
     });
@@ -305,7 +265,6 @@ router.post('/recover-link', async (req, res) => {
     });
   }
 });
-
 // ============================================
 // DOWNLOAD VIA RECOVERY TOKEN
 // ============================================
