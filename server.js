@@ -17,6 +17,7 @@ app.use(express.static('public'));
 app.use('/api/products', require('./routes/products'));
 app.use('/api/payment', require('./routes/payment'));
 app.use('/api/download', require('./routes/download'));
+app.use('/api/transaction', require('./routes/transaction'));
 
 // Home route
 app.get('/', (req, res) => {

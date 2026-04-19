@@ -24,7 +24,7 @@
     <div class="container">
         <header>
             <h1>MZIKI DUKA</h1>
-            <p>Buy Mziki • Nguvu by M-Pesa</p>
+            <p>Buy Mziki • Powered by M-Pesa</p>
         </header>
 
         <main id="main-content">
@@ -83,5 +83,47 @@
     </div>
 
     <script src="/js/main.js"></script>
+ <div class="recovery-widget" id="recovery-widget">
+    <div class="recovery-trigger" onclick="toggleRecoveryForm()">
+        <span class="recovery-icon">🔗</span>
+        <span class="recovery-text">Expired Link?</span>
+    </div>
+    
+    <div class="recovery-form" id="recovery-form" style="display: none;">
+        <div class="recovery-header">
+            <h3>Recover Download Link</h3>
+            <button class="close-btn" onclick="closeRecoveryWidget()">&times;</button>
+        </div>
+        
+        <p class="recovery-description">
+            Lost your download link? Enter your email to get a new one.
+        </p>
+        
+        <form onsubmit="submitRecoveryRequest(event)">
+            <div class="form-group">
+                <label for="recovery-email">Email</label>
+                <input type="email" 
+                       id="recovery-email" 
+                       placeholder="your@email.com"
+                       autocomplete="email">
+            </div>    
+            <button type="submit" class="btn btn-primary" id="recovery-submit-btn">
+                Recover Link
+            </button>
+            
+            <div class="recovery-result" id="recovery-result" style="display: none;"></div>
+        </form>
+        
+        <div class="recovery-info">
+            <p><strong>How it works:</strong></p>
+            <ul>
+                <li>1. New download link sent to your email</li>
+                <li>2. Link expires in 2 hours</li>
+                <li>3. Single-use only (expires after download)</li>
+            </ul>
+        </div>
+    </div>
+</div>
+</div>
 </body>
 </html>

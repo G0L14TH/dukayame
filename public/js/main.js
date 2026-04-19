@@ -296,7 +296,6 @@ function showPaymentSuccess(downloadToken, receiptNumber) {
     downloadLink.href = `/api/download/${downloadToken}`;
     downloadSection.style.display = 'block';
 }
-
 // show payment failed
 function showPaymentFailed() {
     document.getElementById('status-icon').className = 'status-icon error';
@@ -335,3 +334,292 @@ function escapeHtml(text) {
     };
     return String(text).replace(/[&<>"']/g, m => map[m]);
 }
+
+//modified payment success handler 
+async function checkPaymentStatus(checkoutRequestId) {
+    const statusCheckInterval = setInterval(async () => {
+        try {
+            const response = await fetch(`/api/payment/status/${checkoutRequestId}`);
+            const data = await response.json();
+            
+            if (data.status === 'completed') {
+                clearInterval(statusCheckInterval);
+                // Show email capture instead of direct download
+                showEmailCapture(data.mpesaReceipt, data.downloadToken);
+            } else if (data.status === 'failed') {
+                clearInterval(statusCheckInterval);
+                showError(data.message || 'Payment failed');
+            }
+        } catch (error) {
+            console.error('Status check error:', error);
+        }
+    }, 2000); // Check every 2 seconds
+}
+
+function showEmailCapture(mpesaReceipt, downloadToken) {
+    const statusDiv = document.getElementById('payment-status');
+    statusDiv.style.display = 'block';
+    
+    statusDiv.innerHTML = `
+        <div class="status-icon success"></div>
+        <h3 id="status-title">✅ Payment Successful!</h3>
+        <p id="status-message">Receipt: ${mpesaReceipt}</p>
+        
+        <div class="email-capture-section">
+            <h4>Get Your Receipt & Updates</h4>
+            <p class="capture-description">
+                Enter your email to receive your purchase confirmation and future updates
+            </p>
+            
+            <div class="form-group">
+                <input type="email" 
+                       id="customer-email" 
+                       class="email-input"
+                       placeholder="your@email.com"
+                       autocomplete="email">
+                <span class="input-error" id="email-error"></span>
+            </div>
+            
+            <div class="checkbox-group">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="newsletter-opt-in" checked>
+                    <span>Send me exclusive offers and new releases</span>
+                </label>
+            </div>
+            
+            <button class="btn btn-primary" 
+                    onclick="submitEmail('${mpesaReceipt}', '${downloadToken}')">
+                Continue to Download
+            </button>
+            
+            <button class="btn btn-secondary" 
+                    onclick="skipEmailCapture('${downloadToken}')">
+                Skip for now
+            </button>
+        </div>
+    `;
+    
+    // Focus email input
+    setTimeout(() => {
+        document.getElementById('customer-email')?.focus();
+    }, 300);
+}
+
+async function submitEmail(mpesaReceipt, downloadToken) {
+    const emailInput = document.getElementById('customer-email');
+    const newsletterCheckbox = document.getElementById('newsletter-opt-in');
+    const errorSpan = document.getElementById('email-error');
+    
+    const email = emailInput.value.trim();
+    
+    // Validate email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        errorSpan.textContent = 'Please enter a valid email address';
+        errorSpan.style.display = 'block';
+        emailInput.focus();
+        return;
+    }
+    
+    // Clear error
+    errorSpan.style.display = 'none';
+    
+    // Disable button during submission
+    const submitBtn = event.target;
+    const originalText = submitBtn.textContent;
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Saving...';
+    
+    try {
+        const response = await fetch('/api/transaction/link-email', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                mpesaReceiptNumber: mpesaReceipt,
+                email: email,
+                newsletter: newsletterCheckbox.checked
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showDownloadLink(downloadToken, email);
+        } else {
+            errorSpan.textContent = data.message || 'Failed to save email';
+            errorSpan.style.display = 'block';
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+        }
+    } catch (error) {
+        console.error('Email submission error:', error);
+        errorSpan.textContent = 'Network error. You can still download.';
+        errorSpan.style.display = 'block';
+        
+        // Allow download anyway after 3 seconds
+        setTimeout(() => {
+            skipEmailCapture(downloadToken);
+        }, 3000);
+        
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+    }
+}
+
+function skipEmailCapture(downloadToken) {
+    showDownloadLink(downloadToken, null);
+}
+
+function showDownloadLink(downloadToken, email) {
+    const statusDiv = document.getElementById('payment-status');
+    
+    statusDiv.innerHTML = `
+        <div class="status-icon success"></div>
+        <h3 id="status-title">✅ Ready to Download!</h3>
+        ${email ? `<p id="status-message">Receipt sent to: <strong>${email}</strong></p>` : ''}
+        
+        <div id="download-section">
+            <a href="/api/download/${downloadToken}" 
+               class="btn btn-success"
+               download>
+                📥 Download Now
+            </a>
+            <p class="download-info">
+                ⏰ Link expires in 24 hours<br>
+                📊 Maximum 3 downloads<br>
+                💾 Save the file to your device
+            </p>
+        </div>
+    `;
+}
+
+// ============================================
+// LINK RECOVERY FEATURE
+// ============================================
+
+// Toggle recovery form
+function toggleRecoveryForm() {
+    const widget = document.getElementById('recovery-widget');
+    const form = document.getElementById('recovery-form');
+    
+    if (form.style.display === 'none' || !form.style.display) {
+        form.style.display = 'block';
+        widget.classList.add('expanded');
+    } else {
+        form.style.display = 'none';
+        widget.classList.remove('expanded');
+    }
+}
+
+// Close recovery widget
+function closeRecoveryWidget() {
+    const widget = document.getElementById('recovery-widget');
+    const form = document.getElementById('recovery-form');
+    form.style.display = 'none';
+    widget.classList.remove('expanded');
+}
+
+// Submit recovery request
+async function submitRecoveryRequest(event) {
+    event.preventDefault();
+    
+    const emailInput = document.getElementById('recovery-email');
+    const resultDiv = document.getElementById('recovery-result');
+    const submitBtn = document.getElementById('recovery-submit-btn');
+    
+    const email = emailInput.value.trim();
+    
+    // Validate - need at least one
+    if (!email) {
+        showRecoveryResult('error', 'Please enter your email address');
+        return;
+    }
+    
+    // Validate email if provided
+    if (email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            showRecoveryResult('error', 'Invalid email format');
+            emailInput.focus();
+            return;
+        }
+    }
+    
+    // Disable form during submission
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Searching...';
+    emailInput.disabled = true;
+    
+    try {
+        const response = await fetch('/api/transaction/recover-link', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                email: email || null,
+                phoneNumber: phone || null
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showRecoveryResult('success',
+                `✅ Recovery link sent! Found ${data.purchaseCount} purchase(s). ` +
+                `Check your email for download link(s). ` +
+                `Link expires in ${data.expiresIn}.`
+            );
+
+            // Clear form after success
+            setTimeout(() => {
+                emailInput.value = '';
+                closeRecoveryWidget();
+            }, 5000);
+        } else {
+            showRecoveryResult('error', data.message);
+
+            // Re-enable form
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Recover Link';
+            emailInput.disabled = false;
+        }
+    } catch (error) {
+        console.error('Recovery request error:', error);
+        showRecoveryResult('error', 'Network error. Please try again.');
+        
+        // Re-enable form
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Recover Link';
+        emailInput.disabled = false;
+    }
+}
+
+function showRecoveryResult(type, message) {
+    const resultDiv = document.getElementById('recovery-result');
+    resultDiv.className = `recovery-result ${type}`;
+    resultDiv.textContent = message;
+    resultDiv.style.display = 'block';
+    
+    // Auto-hide success messages
+    if (type === 'success') {
+        setTimeout(() => {
+            resultDiv.style.display = 'none';
+        }, 10000);
+    }
+}
+
+// ============================================
+// HELPER FUNCTIONS
+// ============================================
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Export functions for global access
+window.submitEmail = submitEmail;
+window.skipEmailCapture = skipEmailCapture;
+window.toggleRecoveryForm = toggleRecoveryForm;
+window.closeRecoveryWidget = closeRecoveryWidget;
+window.submitRecoveryRequest = submitRecoveryRequest;

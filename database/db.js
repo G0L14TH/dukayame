@@ -8,7 +8,8 @@ const db = new sqlite3.Database(dbPath);
 const init = () => {
   return new Promise((resolve, reject) => {
     db.serialize(() => {
-      // products table
+
+    // products table
       db.run(`
         CREATE TABLE IF NOT EXISTS products (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -24,7 +25,19 @@ const init = () => {
         if (err) console.error('Error creating products table:', err);
       });
 
-      // transactions table
+      // customers table
+      db.run(`
+        CREATE TABLE IF NOT EXISTS customers (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          email TEXT UNIQUE NOT NULL,
+          phone_number TEXT,
+          first_name TEXT,
+          last_name TEXT,
+          newsletter_opt_in INTEGER DEFAULT 0,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+      `);
       db.run(`
         CREATE TABLE IF NOT EXISTS transactions (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -46,28 +59,49 @@ const init = () => {
         if (err) {
           console.error('Error creating transactions table:', err);
           reject(err);
-        } else {
-          // insert sample product if table is empty
-          db.get('SELECT COUNT(*) as count FROM products', (err, row) => {
-            if (!err && row.count === 0) {
-              db.run(`
-                INSERT INTO products (name, description, price, file_path, file_size)
-                VALUES (?, ?, ?, ?, ?)
-              `, [
-                'Premium Music Collection',
-                'High-quality music tracks in MP3 format',
-                100,
-                'sample-music.zip',
-                '50 MB'
-              ], (err) => {
-                if (err) console.error('Error inserting sample product:', err);
-                else console.log('✅ Sample product created');
-              });
-            }
-          });
-          resolve();
         }
       });
+      
+      db.run(`
+        ALTER TABLE transactions 
+        ADD COLUMN customer_email TEXT
+      `, (err) => {
+        if (err && !err.message.includes('duplicate')) {
+          console.error('Error adding column:', err);
+        }
+      });
+
+      // indexes AFTER column exists
+      db.run(`
+        CREATE INDEX IF NOT EXISTS idx_transactions_email 
+        ON transactions(customer_email)
+      `);
+
+      db.run(`
+        CREATE INDEX IF NOT EXISTS idx_transactions_mpesa_receipt 
+        ON transactions(mpesa_receipt_number)
+      `);
+
+      // insert sample product
+      db.get('SELECT COUNT(*) as count FROM products', (err, row) => {
+        if (!err && row.count === 0) {
+          db.run(`
+            INSERT INTO products (name, description, price, file_path, file_size)
+            VALUES (?, ?, ?, ?, ?)
+          `, [
+            'Premium Music Collection',
+            'High-quality music tracks in MP3 format',
+            100,
+            'sample-music.zip',
+            '50 MB'
+          ], (err) => {
+            if (err) console.error('Error inserting sample product:', err);
+            else console.log('✅ Sample product created');
+          });
+        }
+        resolve();
+      });
+
     });
   });
 };
