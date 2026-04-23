@@ -24,7 +24,18 @@ const init = () => {
       `, (err) => {
         if (err) console.error('Error creating products table:', err);
       });
-
+      db.run(`ALTER TABLE products ADD COLUMN artist TEXT`, (err) => {
+        if (err && !err.message.includes('duplicate')) console.error(err);{}
+      });
+      db.run(`ALTER TABLE products ADD COLUMN album TEXT`, (err) => {
+        if (err && !err.message.includes('duplicate')) console.error(err);
+      });
+      db.run(`ALTER TABLE products ADD COLUMN artwork_url TEXT`, (err) => {
+        if (err && !err.message.includes('duplicate')) console.error(err);
+      });
+      db.run(`ALTER TABLE products ADD COLUMN artwork_url TEXT`, (err) => {
+        if (err && !err.message.includes('duplicate')) console.error(err);
+    });
       // customers table
       db.run(`
         CREATE TABLE IF NOT EXISTS customers (

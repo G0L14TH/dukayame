@@ -7,13 +7,19 @@ const mpesa = require('../services/mpesa');
 // initiate payment
 router.post('/initiate', async (req, res) => {
   try {
-    const { productId, phoneNumber } = req.body;
+    const { productId, phoneNumber, email} = req.body;
 
     // validate input
-    if (!productId || !phoneNumber) {
+    if (!productId || !phoneNumber || !email) {
       return res.status(400).json({
         success: false,
-        message: 'Product ID and phone number are required'
+        message: 'Product ID, phone number, and email are required'
+      });
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Valid email address required'
       });
     }
 
@@ -50,16 +56,25 @@ router.post('/initiate', async (req, res) => {
     // store transaction in database
     await db.run(`
       INSERT INTO transactions 
-      (product_id, merchant_request_id, checkout_request_id, phone_number, amount, status)
-      VALUES (?, ?, ?, ?, ?, ?)
+      (product_id, merchant_request_id, checkout_request_id, phone_number, amount, status, customer_email)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
     `, [
       productId,
       stkResponse.MerchantRequestID,
       stkResponse.CheckoutRequestID,
       phoneNumber,
       product.price,
-      'pending'
+      'pending',
+      email.toLowerCase().trim()
     ]);
+
+    await db.run(`
+      INSERT INTO customers (email, phone_number)
+      VALUES (?, ?)
+      ON CONFLICT(email) DO UPDATE SET
+      phone_number = excluded.phone_number,
+      updated_at = CURRENT_TIMESTAMP
+    `, [email.toLowerCase().trim(), phoneNumber]);
 
     res.json({
       success: true,
