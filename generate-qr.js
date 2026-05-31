@@ -1,11 +1,11 @@
 const QRCode = require('qrcode');
 
-// Generate QR code for your website
+// generate QR code for your website
 async function generateQR() {
-  const url = 'https://yourstore.com'; // Change when you have domain
+  const url = 'https://dukayame.com';
   
   try {
-    // Generate and save as image
+    // generate and save as image
     await QRCode.toFile('qr-code.png', url, {
       width: 500,
       margin: 2,
@@ -15,9 +15,9 @@ async function generateQR() {
       }
     });
     
-    console.log('✅ QR code saved as qr-code.png');
+    console.log('QR code saved as qr-code.png');
     
-    // Also generate for terminal (preview)
+    // also generate for terminal (preview)
     const qrTerminal = await QRCode.toString(url, { type: 'terminal' });
     console.log('\nPreview:');
     console.log(qrTerminal);

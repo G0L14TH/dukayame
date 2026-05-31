@@ -1,6 +1,6 @@
 // ============================================
 // DATABASE MIGRATION: Email Capture & Link Recovery
-// Run this ONCE to update your V1.0 database
+// Run this ONCE* to update V1.0 database
 // ============================================
 
 const sqlite3 = require('sqlite3').verbose();

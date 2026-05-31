@@ -25,7 +25,7 @@ const init = () => {
         if (err) console.error('Error creating products table:', err);
       });
       db.run(`ALTER TABLE products ADD COLUMN artist TEXT`, (err) => {
-        if (err && !err.message.includes('duplicate')) console.error(err);{}
+        if (err && !err.message.includes('duplicate')) console.error(err);
       });
       db.run(`ALTER TABLE products ADD COLUMN album TEXT`, (err) => {
         if (err && !err.message.includes('duplicate')) console.error(err);
@@ -33,9 +33,7 @@ const init = () => {
       db.run(`ALTER TABLE products ADD COLUMN artwork_url TEXT`, (err) => {
         if (err && !err.message.includes('duplicate')) console.error(err);
       });
-      db.run(`ALTER TABLE products ADD COLUMN artwork_url TEXT`, (err) => {
-        if (err && !err.message.includes('duplicate')) console.error(err);
-    });
+
       // customers table
       db.run(`
         CREATE TABLE IF NOT EXISTS customers (
@@ -49,6 +47,8 @@ const init = () => {
           updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )
       `);
+
+      // transactions table
       db.run(`
         CREATE TABLE IF NOT EXISTS transactions (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -62,9 +62,12 @@ const init = () => {
           status TEXT DEFAULT 'pending',
           download_token TEXT,
           download_count INTEGER DEFAULT 0,
+          customer_email TEXT,
+          customer_id INTEGER,
           created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
           updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-          FOREIGN KEY (product_id) REFERENCES products (id)
+          FOREIGN KEY (product_id) REFERENCES products (id),
+          FOREIGN KEY (customer_id) REFERENCES customers(id)
         )
       `, (err) => {
         if (err) {
@@ -72,17 +75,56 @@ const init = () => {
           reject(err);
         }
       });
-      
+
+      // Download tokens table (NEW - for email links)
       db.run(`
-        ALTER TABLE transactions 
-        ADD COLUMN customer_email TEXT
+        CREATE TABLE IF NOT EXISTS download_tokens (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          transaction_id INTEGER NOT NULL,
+          token TEXT UNIQUE NOT NULL,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          expires_at DATETIME NOT NULL,
+          clicked_at DATETIME DEFAULT NULL,
+          click_count INTEGER DEFAULT 0,
+          FOREIGN KEY (transaction_id) REFERENCES transactions(id)
+        )
       `, (err) => {
-        if (err && !err.message.includes('duplicate')) {
-          console.error('Error adding column:', err);
-        }
+        if (err) console.error('Error creating download_tokens table:', err);
+        else console.log('✅ download_tokens table ready');
+      });
+      db.run(`
+        CREATE TABLE IF NOT EXISTS recovery_links (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          transaction_id INTEGER NOT NULL,
+          customer_email TEXT NOT NULL,
+          token TEXT UNIQUE NOT NULL,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          expires_at DATETIME NOT NULL,
+          used INTEGER DEFAULT 0,
+          FOREIGN KEY (transaction_id) REFERENCES transactions(id)
+        )
+      `, (err) => {
+        if (err) console.error('Error creating recovery_links table:', err);
+        else console.log('✅ recovery_links table ready');
       });
 
-      // indexes AFTER column exists
+      // Indexes for download_tokens
+      db.run(`
+        CREATE INDEX IF NOT EXISTS idx_download_tokens_token 
+        ON download_tokens(token)
+      `);
+
+      db.run(`
+        CREATE INDEX IF NOT EXISTS idx_download_tokens_transaction 
+        ON download_tokens(transaction_id)
+      `);
+
+      db.run(`
+        CREATE INDEX IF NOT EXISTS idx_download_tokens_expires 
+        ON download_tokens(expires_at)
+      `);
+
+      // Indexes for transactions
       db.run(`
         CREATE INDEX IF NOT EXISTS idx_transactions_email 
         ON transactions(customer_email)
@@ -91,6 +133,11 @@ const init = () => {
       db.run(`
         CREATE INDEX IF NOT EXISTS idx_transactions_mpesa_receipt 
         ON transactions(mpesa_receipt_number)
+      `);
+
+      db.run(`
+        CREATE INDEX IF NOT EXISTS idx_transactions_status 
+        ON transactions(status)
       `);
 
       // insert sample product

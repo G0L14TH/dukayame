@@ -1,4 +1,4 @@
-# 🎵 DUKAYAME digital store w/M-PESA payment
+# 🎵 DUKAYAME V1.0* digital store w/M-PESA payment
 
 
 A clean, minimal platform for selling digital products (music, files) with M-Pesa payment integration.
@@ -33,7 +33,7 @@ A clean, minimal platform for selling digital products (music, files) with M-Pes
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/yourusername/dukayame.git
+git clone [https://github.com/G0L147H/dukayame.git](https://github.com/G0L14TH/dukayame)
 cd dukayame
 
 # 2. Install dependencies
@@ -180,23 +180,28 @@ pm2 save
 mpesa-download-site/
 ├── database/
 │   ├── db.js              # Database setup
-│   └── dukayame.db # SQLite database (created on first run)
-    └── maintenance.js   # Maintenance database
+│   └── dukayame.db        # SQLite database (created on first run)
+    └── maintenance.js     # Maintenance database
 ├── downloads/             # Your product ZIP files
 ├── public/
-│   ├── css/style.css     # Styles with dark mode
-│   ├── js/main.js        # Frontend logic
-│   └── index.html        # Main page
-    └── qr.html           # QR code for store
+│   ├── css/style.css      # Styles with dark mode
+│   ├── js/main.js         # Frontend logic
+│   └── index.html         # Main page
+    └── qr.html            # QR code for store
 ├── routes/
-│   ├── products.js       # Product API
+│   ├── download.js       # Secure downloads
 │   ├── payment.js        # M-Pesa integration
-│   └── download.js       # Secure downloads
+|   ├── products.js       # Product API
+│   └── recovery.js       # Secure recovery downloads
+    ├── transaction.js    # Transactions
 ├── services/
 │   └── mpesa.js          # M-Pesa API wrapper
+    ├── email.js          # email services (send downloadlinks and receipts)
 ├── add-product.js        # Script to add products
-├── check-sales.js        # Script to view sales
+├── check-sales.js        # Script to view overall sales
+├── daily-sales.js        # script to view daily sales
 ├── server.js             # Express server
+├── migrate-email-recovery.js # migrate emails
 └── package.json          # Dependencies
 └── generate-qr.js        # Generates QR code
 
@@ -273,7 +278,7 @@ MIT License - Free to use for personal and commercial projects
 
 ## 🤝 Support
 
-- 📧 Email: your@email.com
+- 📧 Email: nisaidie@dukayame.com
 - 🐛 Issues: [GitHub Issues](https://github.com/G0L14TH/repo/issues)
 
 ---
@@ -288,4 +293,4 @@ Built with:
 
 ---
 
-**Built by INTASOL**
+**Built by mortalman, maintained by INTASOL**

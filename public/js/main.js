@@ -388,7 +388,7 @@ function showEmailCapture(mpesaReceipt, downloadToken) {
             </div>
             
             <button class="btn btn-primary" 
-                    onclick="submitEmail('${mpesaReceipt}', '${downloadToken}')">
+                    onclick="submitEmail(event, '${mpesaReceipt}', '${downloadToken}')">
                 Continue to Download
             </button>
             
@@ -405,7 +405,7 @@ function showEmailCapture(mpesaReceipt, downloadToken) {
     }, 300);
 }
 
-async function submitEmail(mpesaReceipt, downloadToken) {
+async function submitEmail(event, mpesaReceipt, downloadToken) {
     const emailInput = document.getElementById('customer-email');
     const newsletterCheckbox = document.getElementById('newsletter-opt-in');
     const errorSpan = document.getElementById('email-error');
@@ -444,7 +444,7 @@ async function submitEmail(mpesaReceipt, downloadToken) {
         const data = await response.json();
         
         if (data.success) {
-            showDownloadLink(downloadToken, email);
+            showDownloadLink(downloadToken, data.emailReceiptSent ? email : null, data.emailReceiptSent !== false);
         } else {
             errorSpan.textContent = data.message || 'Failed to save email';
             errorSpan.style.display = 'block';
@@ -470,13 +470,14 @@ function skipEmailCapture(downloadToken) {
     showDownloadLink(downloadToken, null);
 }
 
-function showDownloadLink(downloadToken, email) {
+function showDownloadLink(downloadToken, email, emailReceiptSent = true) {
     const statusDiv = document.getElementById('payment-status');
     
     statusDiv.innerHTML = `
         <div class="status-icon success"></div>
         <h3 id="status-title">✅ Ready to Download!</h3>
         ${email ? `<p id="status-message">Receipt sent to: <strong>${email}</strong></p>` : ''}
+        ${emailReceiptSent ? '' : '<p class="download-warning">Receipt email could not be delivered. Please save the download link below.</p>'}
         
         <div id="download-section">
             <a href="/api/download/${downloadToken}" 
@@ -614,7 +615,7 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-// Export functions for global access
+// export functions for global access
 window.submitEmail = submitEmail;
 window.skipEmailCapture = skipEmailCapture;
 window.toggleRecoveryForm = toggleRecoveryForm;

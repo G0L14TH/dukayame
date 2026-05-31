@@ -1,11 +1,11 @@
 const express = require('express');
 const router = express.Router();
+const path = require('path');
 const db = require('../database/db');
 const crypto = require('crypto');
+const { sendReceiptEmail, sendRecoveryEmail } = require('../services/email');
 
-// ============================================
 // LINK EMAIL TO TRANSACTION (After Payment)
-// ============================================
 router.post('/link-email', async (req, res) => {
   try {
     const { mpesaReceiptNumber, email, newsletter } = req.body;
@@ -21,7 +21,7 @@ router.post('/link-email', async (req, res) => {
 
     // Check if transaction exists
     const transaction = await db.get(
-      'SELECT * FROM transactions WHERE mpesa_receipt_number = ?',
+      'SELECT id, product_id, download_token, amount, mpesa_receipt_number, transaction_date, phone_number FROM transactions WHERE mpesa_receipt_number = ?',
       [mpesaReceiptNumber]
     );
 
@@ -29,6 +29,18 @@ router.post('/link-email', async (req, res) => {
       return res.status(404).json({
         success: false,
         message: 'Transaction not found'
+      });
+    }
+
+    const product = await db.get(
+      'SELECT id, name, price FROM products WHERE id = ?',
+      [transaction.product_id]
+    );
+
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: 'Product not found for this transaction'
       });
     }
 
@@ -92,13 +104,17 @@ router.post('/link-email', async (req, res) => {
 
     console.log('✅ Email linked to transaction:', mpesaReceiptNumber);
 
-    // Optional: Send receipt email here
-    // await sendReceiptEmail(email, transaction);
+    const emailResult = await sendReceiptEmail(email, transaction, product, transaction.download_token);
+    const suffix = emailResult.success
+      ? 'Receipt email sent.'
+      : 'Email linked successfully, but receipt email was not sent.';
 
     res.json({
       success: true,
-      message: 'Email linked successfully',
-      downloadToken: transaction.download_token
+      message: `Email linked successfully. ${suffix}`,
+      downloadToken: transaction.download_token,
+      emailReceiptSent: emailResult.success,
+      emailError: emailResult.success ? undefined : emailResult.error
     });
 
   } catch (error) {
@@ -110,9 +126,7 @@ router.post('/link-email', async (req, res) => {
   }
 });
 
-// ============================================
 // HELPER: Check Rate Limit
-// ============================================
 async function checkRateLimit(identifier, identifierType, action, maxRequests, timeWindowMinutes) {
   const cutoffTime = new Date(Date.now() - timeWindowMinutes * 60 * 1000)
     .toISOString();
@@ -136,9 +150,7 @@ async function logRateLimit(identifier, identifierType, action, ipAddress) {
   `, [identifier, identifierType, action, ipAddress]);
 }
 
-// ============================================
 // REQUEST LINK RECOVERY
-// ============================================
 router.post('/recover-link', async (req, res) => {
   try {
     const { email } = req.body;
@@ -243,18 +255,25 @@ router.post('/recover-link', async (req, res) => {
       });
     }
 
+    // Send recovery email
+    const recoveryEmailResult = await sendRecoveryEmail(email, recoveryLinks);
+    if (!recoveryEmailResult.success) {
+      console.error('Recovery email send failed:', recoveryEmailResult.error);
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to send recovery email. Please try again later.'
+      });
+    }
+
     // Log rate limit
     await logRateLimit(identifier, identifierType, 'recover_link', ipAddress);
-
-    // TODO: Send recovery email
-    console.log('📧 Recovery email would be sent to:', email);
-    console.log('Links:', recoveryLinks);
 
     res.json({
       success: true,
       message: 'Recovery link sent to your email. Check your inbox.',
       purchaseCount: transactions.length,
-      expiresIn: '2 hours'
+      expiresIn: '2 hours',
+      emailSent: true
     });
 
   } catch (error) {
@@ -265,9 +284,8 @@ router.post('/recover-link', async (req, res) => {
     });
   }
 });
-// ============================================
+
 // DOWNLOAD VIA RECOVERY TOKEN
-// ============================================
 router.get('/download/recovery/:token', async (req, res) => {
   try {
     const { token } = req.params;
