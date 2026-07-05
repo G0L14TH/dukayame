@@ -239,7 +239,7 @@ mpesa-download-site/
 
 ## License
 
-MIT License - Free to use for personal and commercial projects
+All rights revserved.
 
 ---
 
