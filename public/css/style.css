@@ -145,6 +145,41 @@ body::before {
 }
 
 /* ============================================
+   BACK BUTTON NAVIGATION
+   ============================================ */
+.back-button {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 999;
+    padding: 10px 16px;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 50px;
+    color: var(--text);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: var(--shadow);
+    transition: all 0.3s ease;
+}
+
+.back-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.15);
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+[data-theme="dark"] .back-button:hover {
+    box-shadow: 0 6px 24px rgba(59, 130, 246, 0.3);
+}
+
+/* ============================================
    CONTAINER & LAYOUT
    ============================================ */
 .container {
