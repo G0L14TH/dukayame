@@ -146,5 +146,5 @@ npm run maintenance:stats
 
 ## License
 
-This project is licensed under the MIT License. Developed by mortalman maintained by INTASOL
+This project is licensed under the All Rights Reserved License. Developed by mortalman, maintained by INTASOL
 
