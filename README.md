@@ -1,7 +1,7 @@
-# 🎵 DUKAYAME V1.0* digital store w/M-PESA payment
+# 🎵 DUKAYAME V1.0 digital store w/M-PESA payment
 
 
-A clean, minimal platform for selling digital products (music, files) with M-Pesa payment integration.
+A clean, minimal storefront platform for selling digital products (music, files) with M-Pesa payment integration.
 
 ![M-Pesa](https://img.shields.io/badge/payment-M--Pesa-green.svg)
 ![Node](https://img.shields.io/badge/node-%3E%3D16.0.0-brightgreen.svg)
