@@ -137,44 +137,6 @@ SELECT * FROM transactions WHERE status='completed';
 .exit
 ```
 
----
-
-## 🚀 Going Live (Production)
-
-### Requirements
-- Domain name (~$10/year)
-- VPS Server (DigitalOcean, Vultr ~$6/month)
-- M-Pesa Production credentials
-- SSL certificate (free with Let's Encrypt)
-
-### Quick Deploy
-
-```bash
-# 1. Get a VPS and domain
-# 2. Point domain to server IP
-# 3. SSH to server
-ssh user@my-server
-
-# 4. Clone and setup
-git clone https://github.com/G0L14TH/dukayame.git
-cd dukayame
-npm install --production
-
-# 5. Configure production .env
-cp .env.example .env
-nano .env  # Add production M-Pesa credentials
-
-# 6. Start with PM2
-npm install -g pm2
-pm2 start server.js --name mystore
-pm2 startup
-pm2 save
-
-# 7. Setup Nginx + SSL
-# (See full deployment guide in docs)
-```
----
-
 ## 🛠️ Project Structure
 
 mpesa-download-site/
@@ -197,6 +159,10 @@ mpesa-download-site/
 ├── services/
 │   └── mpesa.js          # M-Pesa API wrapper
     ├── email.js          # email services (send downloadlinks and receipts)
+├── scripts/
+│   └── pre-upload-check.sh  # check the files to be uploaded
+    ├── setup-cron.sh
+    ├── upload-product.sh #script to upload products
 ├── add-product.js        # Script to add products
 ├── check-sales.js        # Script to view overall sales
 ├── daily-sales.js        # script to view daily sales
@@ -270,20 +236,20 @@ mpesa-download-site/
 
 ---
 
-## 📄 License
+## License
 
 MIT License - Free to use for personal and commercial projects
 
 ---
 
-## 🤝 Support
+## Support
 
 - 📧 Email: nisaidie@dukayame.com
 - 🐛 Issues: [GitHub Issues](https://github.com/G0L14TH/repo/issues)
 
 ---
 
-## 🙏 Credits
+## Credits
 
 Built with:
 - [Node.js](https://nodejs.org) - Server runtime
