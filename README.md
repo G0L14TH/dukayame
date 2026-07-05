@@ -47,7 +47,7 @@ nano .env  # Add your M-Pesa credentials
 npm start
 
 # 5. Open in browser
-http://dukayame.com
+http://dukayame.com^
 ```
 
 ---
