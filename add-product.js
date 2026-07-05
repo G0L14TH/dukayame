@@ -7,16 +7,19 @@ async function addProduct() {
             description: '9 tracks + Lyrics + Cover Art + Media',
             price: 100,
             file_path: '20-MKS-ESSAY.zip',
-            file_size: '100 MB'
+            file_size: '100 MB',
+            artist: 'derrick!',
+            album: 'GEM Z',
+            artwork_url: 'gemz.jpg',
         };
 
         await db.init();
         
         // add products
          const result = await db.run(`
-      INSERT INTO products (name, description, price, file_path, file_size)
-      VALUES (?, ?, ?, ?, ?)
-    `, [product.name, product.description, product.price, product.file_path, product.file_size]);
+      INSERT INTO products (name, description, price, file_path, file_size, artist, album, artwork_url)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `, [product.name, product.description, product.price, product.file_path, product.file_size, product.artist, product.album, product.artwork_url]);
 
     console.log('Product added successfully!');
     console.log('Product ID:', result.id);

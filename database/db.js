@@ -76,7 +76,7 @@ const init = () => {
         }
       });
 
-      // Download tokens table (NEW - for email links)
+      // download tokens table (for email links)
       db.run(`
         CREATE TABLE IF NOT EXISTS download_tokens (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -108,7 +108,7 @@ const init = () => {
         else console.log('✅ recovery_links table ready');
       });
 
-      // Indexes for download_tokens
+      // indexes for download_tokens
       db.run(`
         CREATE INDEX IF NOT EXISTS idx_download_tokens_token 
         ON download_tokens(token)
@@ -124,7 +124,7 @@ const init = () => {
         ON download_tokens(expires_at)
       `);
 
-      // Indexes for transactions
+      // indexes for transactions
       db.run(`
         CREATE INDEX IF NOT EXISTS idx_transactions_email 
         ON transactions(customer_email)
@@ -144,14 +144,17 @@ const init = () => {
       db.get('SELECT COUNT(*) as count FROM products', (err, row) => {
         if (!err && row.count === 0) {
           db.run(`
-            INSERT INTO products (name, description, price, file_path, file_size)
-            VALUES (?, ?, ?, ?, ?)
+            INSERT INTO products (name, description, price, file_path, file_size, artist, album, artwork_url)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
           `, [
             'Premium Music Collection',
             'High-quality music tracks in MP3 format',
             100,
             'sample-music.zip',
-            '50 MB'
+            '50 MB',
+            'Sample Artist',
+            'Sample Album',
+            'sample-artwork.jpg'
           ], (err) => {
             if (err) console.error('Error inserting sample product:', err);
             else console.log('✅ Sample product created');

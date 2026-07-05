@@ -1,80 +1,64 @@
-# 🎵 DUKAYAME V1.0 digital store w/M-PESA payment
+# DUKAYAME (v1.0)
 
-
-A clean, minimal storefront platform for selling digital products (music, files) with M-Pesa payment integration.
+DUKAYAME is a lightweight Node.js storefront for selling digital downloads with M-Pesa payments. It combines a simple public storefront, secure payment handling, and download delivery for customers who purchase products from the store.
 
 ![M-Pesa](https://img.shields.io/badge/payment-M--Pesa-green.svg)
 ![Node](https://img.shields.io/badge/node-%3E%3D16.0.0-brightgreen.svg)
+![License](https://img.shields.io/badge/license-MIT-green.svg)
 
----
+## What the project does
 
-## ✨ Features
+- Displays digital products from a local SQLite database
+- Starts M-Pesa STK Push payments for customer purchases
+- Tracks transactions and updates payment status after callbacks
+- Issues secure download links for completed purchases
+- Sends purchase receipts and recovery emails
+- Provides a simple recovery flow when customers lose their download links
 
-- 🎵 **Digital Downloads** - Sell music, albums, files
-- 📱 **M-Pesa Payments** - Seamless Kenyan mobile money
-- 🌓 **Dark/Light Mode** - Auto theme switching
-- 🔐 **Secure Downloads** - Token-based with 24hr expiry
-- 📊 **Sales Tracking** - View transactions and revenue
-- 🎨 **Minimal Design** - Clean, centered, responsive
-- 🌀 **Animated Background** - Subtle wobbling gradients
-- ⚡ **Fast & Simple** - No bloat, just what you need
+## Tech stack
 
----
+- Node.js + Express
+- SQLite for product and transaction storage
+- M-Pesa Daraja API for mobile payments
+- Nodemailer for email delivery
+- QR code generation support
 
-## Quick Start
+## Project structure
 
-### Prerequisites
+- [server.js](server.js) — Starts the Express server and mounts all API routes
+- [routes/](routes/) — Product, payment, download, transaction, and recovery endpoints
+- [database/](database/) — SQLite initialization and maintenance helpers
+- [services/](services/) — M-Pesa and email integrations
+- [public/](public/) — Frontend storefront and payment UI
+- [downloads/](downloads/) — Product files that customers can download
+- [scripts/](scripts/) — Helper deployment and upload scripts
 
-- Node.js 16 or higher
-- M-Pesa Developer Account (sandbox or production)
-- Your digital products (ZIP files)
+## Requirements
 
-### Installation
+- Node.js 16+ (18+ recommended)
+- npm
+- A Safaricom Daraja developer account for M-Pesa
+- Optional: SMTP/Gmail credentials for email receipts and recovery links
+
+## Installation
 
 ```bash
-# 1. Clone the repository
-git clone [https://github.com/G0L147H/dukayame.git](https://github.com/G0L14TH/dukayame)
+git clone <your-repo-url>
 cd dukayame
-
-# 2. Install dependencies
 npm install
-
-# 3. Setup environment
 cp .env.example .env
-nano .env  # Add your M-Pesa credentials
-
-# 4. Start the server
-npm start
-
-# 5. Open in browser
-http://dukayame.com^
 ```
 
----
+Edit the new [.env](.env.example) file and fill in the required values.
 
-## Configuration
+## Environment configuration
 
-### Get M-Pesa Credentials
-
-**For Testing (Sandbox):**
-1. Go to https://developer.safaricom.co.ke
-2. Create an account
-3. Create a new app
-4. Copy your credentials
-
-**Test Credentials:**
-- Phone: `254708374149`
-- PIN: `174379`
-
-**For Production (Real Money):**
-1. Apply for PayBill or Till Number at Safaricom
-2. Get production credentials from Daraja Portal
-3. Link your bank account
-
-### Environment Variables (`.env`)
+The app expects the following variables in your environment file:
 
 ```env
-# M-Pesa Sandbox (Testing)
+PORT=3000
+NODE_ENV=development
+
 MPESA_ENVIRONMENT=sandbox
 MPESA_CONSUMER_KEY=your_consumer_key
 MPESA_CONSUMER_SECRET=your_consumer_secret
@@ -82,182 +66,85 @@ MPESA_PASSKEY=your_passkey
 MPESA_SHORTCODE=174379
 MPESA_CALLBACK_URL=http://localhost:3000/api/payment/callback
 
-# Security
-DOWNLOAD_TOKEN_SECRET=random_64_character_string
+EMAIL_USER=your_gmail_address
+EMAIL_PASS=your_app_password
+STORE_NAME=DUKAYAME
+SITE_URL=http://localhost:3000
+
+DOWNLOAD_TOKEN_SECRET=replace_with_a_random_string
 DOWNLOAD_LINK_EXPIRY=86400000
 ```
 
----
+## Running the app
 
-## 📦 Adding Products
-
-### Method 1: Using the Script (Easiest)
+Start the server in development mode:
 
 ```bash
-# Edit add-product.js with your product details
-nano add-product.js
-
-# Run it
-node add-product.js
+npm run dev
 ```
 
-### Method 2: Direct SQL
+Or use star cmd
 
 ```bash
-sqlite3 database/mpesa_downloads.db
-
-INSERT INTO products (name, description, price, file_path, file_size)
-VALUES ('Summer Album', '20 tracks + lyrics', 800, 'summer-album.zip', '150 MB');
-
-.exit
+npm start
 ```
 
-### Adding Product Files
+Then open:
+
+```text
+http://localhost:3000
+```
+
+## Adding products
+
+Products are stored in the SQLite database and the storefront reads them from the API.
+
+1. Place your downloadable files in [downloads/](downloads/).
+2. Add a product record to the `products` table with the product name, price, description, and matching `file_path`.
+3. Make sure the file name in `file_path` matches the file saved in [downloads/](downloads/).
+
+The database is initialized automatically on first run, and a sample product is inserted if no products exist yet.
+
+## API overview
+
+The app shos the following main endpoints:
+
+- `GET /api/products` — List active products
+- `GET /api/products/:id` — Get a single product
+- `POST /api/payment/initiate` — Start an M-Pesa STK Push payment
+- `POST /api/payment/callback` — Handle M-Pesa callback updates
+- `GET /api/payment/status/:checkoutRequestId` — Check transaction status
+- `POST /api/payment/save-email` — Save customer email after payment
+- `GET /api/download/:token` — Download a product using a secure token
+- `POST /api/recovery/send-links` — Send recovery links to a customer email
+- `GET /api/recovery/check-email/:email` — Check whether an email has previous purchases
+
+## Maintenance scripts
+
+The project includes maintenance helpers for database-related tasks:
 
 ```bash
-# 1. Create your ZIP file (music + lyrics + artwork)
-# 2. Copy to downloads folder
-cp your-album.zip downloads/
-
-# 3. Reference in database
-# file_path should match the ZIP filename
+npm run maintenance
+npm run maintenance:export
+npm run maintenance:archive
+npm run maintenance:cleanup
+npm run maintenance:stats
 ```
 
----
+## Download behavior
 
-## 📊 Checking Sales
+- In-browser download links are valid for up to 3 downloads and 24 hours.
+- Recovery email links are single-use and expire after a short window.
+- Files must exist in [downloads/](downloads/) or downloads will fail.
 
-```bash
-# View all sales
-node check-sales.js
+## Troubleshooting
 
-# View database directly
-sqlite3 database/mpesa_downloads.db
-SELECT * FROM transactions WHERE status='completed';
-.exit
-```
-
-## 🛠️ Project Structure
-
-mpesa-download-site/
-├── database/
-│   ├── db.js              # Database setup
-│   └── dukayame.db        # SQLite database (created on first run)
-    └── maintenance.js     # Maintenance database
-├── downloads/             # Your product ZIP files
-├── public/
-│   ├── css/style.css      # Styles with dark mode
-│   ├── js/main.js         # Frontend logic
-│   └── index.html         # Main page
-    └── qr.html            # QR code for store
-├── routes/
-│   ├── download.js       # Secure downloads
-│   ├── payment.js        # M-Pesa integration
-|   ├── products.js       # Product API
-│   └── recovery.js       # Secure recovery downloads
-    ├── transaction.js    # Transactions
-├── services/
-│   └── mpesa.js          # M-Pesa API wrapper
-    ├── email.js          # email services (send downloadlinks and receipts)
-    ├── logger.js         # logs of all activities in the system
-├── scripts/
-│   └── pre-upload-check.sh  # check the files to be uploaded
-    ├── setup-cron.sh
-    ├── upload-product.sh #script to upload products
-├── add-product.js        # Script to add products
-├── check-sales.js        # Script to view overall sales
-├── daily-sales.js        # script to view daily sales
-├── server.js             # Express server
-├── migrate-email-recovery.js # migrate emails
-└── package.json          # Dependencies
-└── generate-qr.js        # Generates QR code
-
-
-## 🎨 Features in Detail
-
-### Dark Mode
-- Automatically detects system theme preference
-- Manual toggle button (top-right corner)
-- Smooth transitions between themes
-- Preference saved in browser
-
-### Wobbling Background
-- Subtle animated color gradients
-- Adapts colors to dark/light theme
-- GPU-accelerated (no performance impact)
-- Adds modern, premium feel
-
-### Secure Downloads
-- Each purchase gets unique download token
-- Token expires after 24 hours
-- Maximum 3 downloads per purchase
-- Prevents unauthorized sharing
-
----
-
-## 🐛 Troubleshooting
-
-### "Wrong credentials" error
-- Check your M-Pesa keys in `.env`
-- Make sure no extra spaces
-- Restart server: `npm start`
-
-### Callback not received
-- In sandbox: callback might be delayed
-- Check server logs: `pm2 logs mystore`
-- Verify callback URL matches `.env`
-
-### Download link not working
-- Check file exists in `downloads/` folder
-- Verify token hasn't expired (24hrs)
-- Check download count (max 3)
-
-### Server won't start
-- Check if port 3000 is already in use
-- Run: `killall node` then `npm start`
-- Check `.env` file exists
-
----
-
-## 📈 Roadmap
-
-### Version 1.0 (Current)
-- ✅ Digital product sales
-- ✅ M-Pesa payments
-- ✅ Dark/light mode
-- ✅ Secure downloads
-
-### Version 2.0 (Planned)
-- 🎫 Event ticket sales with QR codes
-- 💝 Pay What You Want pricing
-- 💳 Card payments (Stripe)
-- 🌍 Multi-currency support
-- 👕 Physical product sales
-- 🛒 Shopping cart
-
----
+- Make sure [.env](.env.example) exists and contains valid M-Pesa credentials.
+- Check your callback URL if the payment status never updates.
+- If downloads fail, confirm the requested file is present in [downloads/](downloads/).
+- Review the terminal output if the server does not start or the payment flow fails.
 
 ## License
 
-All rights revserved.
+This project is licensed under the MIT License. Developed by mortalman maintained by INTASOL
 
----
-
-## Support
-
-- 📧 Email: nisaidie@dukayame.com
-- 🐛 Issues: [GitHub Issues](https://github.com/G0L14TH/repo/issues)
-
----
-
-## Credits
-
-Built with:
-- [Node.js](https://nodejs.org) - Server runtime
-- [Express](https://expressjs.com) - Web framework
-- [SQLite](https://www.sqlite.org) - Database
-- [Safaricom Daraja API](https://developer.safaricom.co.ke) - M-Pesa integration
-
----
-
-**Built by mortalman, maintained by INTASOL**

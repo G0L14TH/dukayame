@@ -22,7 +22,7 @@ const logger = winston.createLogger({
   ),
   defaultMeta: { service: 'dukayame' },
   transports: [
-    // Error logs - only errors and above
+    // Error logs
     new winston.transports.File({
       filename: path.join(logsDir, 'error.log'),
       level: 'error',

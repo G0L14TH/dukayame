@@ -210,7 +210,7 @@ ${downloadUrl}
 
 Important:
 - Link expires in 24 hours
-- Maximum 3 downloads
+- Maximum of 3 downloads
 - Save the file after downloading
 
 If you have any questions, reply to this email.
