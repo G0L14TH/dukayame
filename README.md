@@ -159,6 +159,7 @@ mpesa-download-site/
 ├── services/
 │   └── mpesa.js          # M-Pesa API wrapper
     ├── email.js          # email services (send downloadlinks and receipts)
+    ├── logger.js         # logs of all activities in the system
 ├── scripts/
 │   └── pre-upload-check.sh  # check the files to be uploaded
     ├── setup-cron.sh
