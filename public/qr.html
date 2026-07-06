@@ -67,14 +67,20 @@
     <div class="container">
         <div id="qrcode"></div>
         
-        <div class="url">https://dukayame.com</div>
+        <div class="url" id="store-url"></div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script>
-        // Generate QR code
+        const storeUrl = window.location.origin + "/";
+        const storeUrlElement = document.getElementById("store-url");
+
+        if (storeUrlElement) {
+            storeUrlElement.textContent = storeUrl;
+        }
+
         new QRCode(document.getElementById("qrcode"), {
-            text: "https://dukayame.com",
+            text: storeUrl,
             width: 256,
             height: 256,
             colorDark: "#000000",
